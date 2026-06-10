@@ -150,8 +150,11 @@ export function loadSettings() {
     }
     if (!window.settings.partnerStatus) window.settings.partnerStatus = '在线';
     if (!window.settings.myStatus) window.settings.myStatus = '在线';
+    // 👇 新增这一行：确保后台通知开关默认是关闭的
+    if (window.settings.backgroundNotificationEnabled === undefined) {
+        window.settings.backgroundNotificationEnabled = false;
+    }
 }
-
 // ========== 拍一拍库 ==========
 export function saveCustomPokes() {
     localStorage.setItem('customPokes', JSON.stringify(window.customPokes || []));
