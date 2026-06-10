@@ -975,38 +975,42 @@
         autoIntervalSlider.oninput = () => { let v = parseInt(autoIntervalSlider.value); autoIntervalVal.innerText = v; window.settings.autoSpeakInterval = v; localStorage.setItem('chat_settings', JSON.stringify(window.settings)); if(typeof restartAutoSpeakTimer === 'function') restartAutoSpeakTimer(); };
         autoEnable.onchange = () => { window.settings.autoSpeakEnabled = autoEnable.checked; localStorage.setItem('chat_settings', JSON.stringify(window.settings)); if(typeof restartAutoSpeakTimer === 'function') restartAutoSpeakTimer(); };
                 // 后台通知开关
-        const bgNotifCheckbox = document.getElementById('backgroundNotifEnable');
-        if (bgNotifCheckbox) {
-            // 读取保存的设置
-            bgNotifCheckbox.checked = window.settings.backgroundNotificationEnabled === true;
-            bgNotifCheckbox.addEventListener('change', function(e) {
-                const newVal = e.target.checked;
-                window.settings.backgroundNotificationEnabled = newVal;
+        // 后台通知开关
+const bgNotifCheckbox = document.getElementById('backgroundNotifEnable');
+if (bgNotifCheckbox) {
+    // 读取保存的设置
+    bgNotifCheckbox.checked = window.settings.backgroundNotificationEnabled === true;
+    bgNotifCheckbox.addEventListener('change', function(e) {
+        const newVal = e.target.checked;
+        window.settings.backgroundNotificationEnabled = newVal;
+        localStorage.setItem('chat_settings', JSON.stringify(window.settings));
+        
+        // 如果用户打开了开关，但还未授权，请求通知权限
+        if (newVal && window.Notification) {
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(perm => {
+                    if (perm !== 'granted') {
+                        alert('您拒绝了通知权限，后台通知将无法工作');
+                        window.settings.backgroundNotificationEnabled = false;
+                        bgNotifCheckbox.checked = false;
+                        localStorage.setItem('chat_settings', JSON.stringify(window.settings));
+                    } else {
+                        alert('已开启后台通知 ✓');
+                    }
+                });
+            } else if (Notification.permission === 'denied') {
+                alert('通知权限已被浏览器阻止，请手动开启');
+                window.settings.backgroundNotificationEnabled = false;
+                bgNotifCheckbox.checked = false;
                 localStorage.setItem('chat_settings', JSON.stringify(window.settings));
-                // 如果用户打开了开关，但还未授权，请求通知权限
-                if (newVal && window.Notification && Notification.permission === 'default') {
-                    Notification.requestPermission().then(perm => {
-                        if (perm !== 'granted') {
-                            showNotification('您拒绝了通知权限，后台通知将无法工作', 'warning');
-                            window.settings.backgroundNotificationEnabled = false;
-                            bgNotifCheckbox.checked = false;
-                            localStorage.setItem('chat_settings', JSON.stringify(window.settings));
-                        } else {
-                            showNotification('已开启后台通知 ✓', 'success');
-                        }
-                    });
-                } else if (newVal && window.Notification && Notification.permission === 'denied') {
-                    showNotification('通知权限已被浏览器阻止，请手动开启', 'error');
-                    window.settings.backgroundNotificationEnabled = false;
-                    bgNotifCheckbox.checked = false;
-                    localStorage.setItem('chat_settings', JSON.stringify(window.settings));
-                } else if (newVal) {
-                    showNotification('已开启后台通知 ✓', 'success');
-                } else {
-                    showNotification('已关闭后台通知', 'info');
-                }
-            });
+            } else if (Notification.permission === 'granted') {
+                alert('已开启后台通知 ✓');
+            }
+        } else if (!newVal) {
+            // 关闭时不做什么
         }
+    });
+}
         if(typeof restartAutoSpeakTimer === 'function') restartAutoSpeakTimer();
         document.getElementById('statsIconBtn').onclick = () => {
     if (typeof window.openStatsModal === 'function') window.openStatsModal();
