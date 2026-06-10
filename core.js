@@ -98,6 +98,10 @@ export function addMessageToHistory(content, sender, replyTo = null) {
         if (window.Notification && Notification.permission === 'granted') {
             const notification = new Notification(title, { body: body, icon: window.otherAvatarBase64 || undefined });
             notification.onclick = function() { window.focus(); notification.close(); };
+ // 👇 增加下面三行：4秒后自动关闭通知
+            setTimeout(() => {
+                notification.close();
+            }, 4000);
         }
     }
     // ========== 通知结束 ==========
